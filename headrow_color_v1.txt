@@ -1,0 +1,138 @@
+
+open("/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4.tif");
+setTool("rectangle");
+makeRectangle(1224,536,552,2968);
+run("Crop");
+run("RGB Stack");
+
+//create mask using green channel thresholded 0-100
+
+selectWindow("14jul2016v4.tif");
+run("Stack to Images");
+selectWindow("Red");
+close();
+selectWindow("Blue");
+close();
+selectWindow("Green");
+setThreshold(0, 85);
+run("Convert to Mask");
+run("Invert LUT");
+saveAs("Tiff", "/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4_mask.tif");
+
+open("/Users/ianmcnish/Documents/rwd/14jul2016v4.tif");
+setTool("rectangle");
+makeRectangle(1224,536,552,2968);
+run("Crop");
+imageCalculator("Subtract", "14jul2016v4.tif","14jul2016v4_mask.tif");
+run("RGB Stack");
+
+
+function separatechannels(slice,imagetitle,imagepath){
+selectWindow("14jul2016v4.tif");
+setSlice(slice);
+run("Duplicate...",imagetitle);
+saveAs("Tiff", imagepath);};
+
+separatechannels(1,"title=14jul2016v4redchannel","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4redchannel.tif");
+wait(500);
+separatechannels(2,"title=14jul2016v4greenchannel","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4greenchannel.tif");
+wait(500);
+separatechannels(3,"title=14jul2016v4bluechannel","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4bluechannel.tif");
+wait(500);
+
+//measure images
+function measureimage(imagetitle,calculation1,calculation2,scale)
+{selectWindow(imagetitle);
+run("Set Scale...", scale); 
+setAutoThreshold("Default light");
+Overlay.show;
+run("To ROI Manager");
+n = roiManager("count");
+for (i=0; i<n; i++) {
+roiManager("select", i);
+getStatistics(area,mean);
+setResult(calculation1, i, area);
+setResult(calculation2, i, mean);};
+close();};
+
+measureimage("14jul2016v4redchannel.tif","arearsbcmask","meanrsbcmask","distance=52.3429 known=0.6069 pixel=1 unit=m");
+wait(500);
+measureimage("14jul2016v4greenchannel.tif","areagsbcmask","meangsbcmask","distance=52.3429 known=0.6069 pixel=1 unit=m");
+wait(500);
+measureimage("14jul2016v4bluechannel.tif","areabsbcmask","meanbsbcmask","distance=52.3429 known=0.6069 pixel=1 unit=m");
+wait(500);
+
+updateResults();
+saveAs("Results","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016results_background_subtraction.csv");
+
+
+
+//taken from imagej 17-jan-2017
+
+
+open("/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4.tif");
+setTool("rectangle");
+makeRectangle(1224,536,552,2968);
+run("Crop");
+run("RGB Stack");
+
+//create mask using green channel thresholded 0-100
+
+selectWindow("14jul2016v4.tif");
+run("Stack to Images");
+selectWindow("Red");
+close();
+selectWindow("Blue");
+close();
+selectWindow("Green");
+setThreshold(0, 100);
+run("Convert to Mask");
+run("Invert LUT");
+saveAs("Tiff", "/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4_mask.tif");
+
+open("/Users/ianmcnish/Documents/rwd/14jul2016v4.tif");
+setTool("rectangle");
+makeRectangle(1224,536,552,2968);
+run("Crop");
+imageCalculator("Subtract", "14jul2016v4.tif","14jul2016v4_mask.tif");
+run("RGB Stack");
+
+
+function separatechannels(slice,imagetitle,imagepath){
+selectWindow("14jul2016v4.tif");
+setSlice(slice);
+run("Duplicate...",imagetitle);
+saveAs("Tiff", imagepath);};
+
+separatechannels(1,"title=14jul2016v4redchannel","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4redchannel.tif");
+wait(500);
+separatechannels(2,"title=14jul2016v4greenchannel","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4greenchannel.tif");
+wait(500);
+separatechannels(3,"title=14jul2016v4bluechannel","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016v4bluechannel.tif");
+wait(500);
+
+//measure images
+function measureimage(imagetitle,calculation1,calculation2,scale)
+{selectWindow(imagetitle);
+run("Set Scale...", scale); 
+setAutoThreshold("Default light");
+Overlay.show;
+run("To ROI Manager");
+n = roiManager("count");
+for (i=0; i<n; i++) {
+roiManager("select", i);
+getStatistics(area,mean);
+setResult(calculation1, i, area);
+setResult(calculation2, i, mean);};
+close();};
+
+measureimage("14jul2016v4redchannel.tif","arearsbcmask","meanrsbcmask","distance=52.3429 known=0.6069 pixel=1 unit=m");
+wait(500);
+measureimage("14jul2016v4greenchannel.tif","areagsbcmask","meangsbcmask","distance=52.3429 known=0.6069 pixel=1 unit=m");
+wait(500);
+measureimage("14jul2016v4bluechannel.tif","areabsbcmask","meanbsbcmask","distance=52.3429 known=0.6069 pixel=1 unit=m");
+wait(500);
+
+updateResults();
+saveAs("Results","/Users/ianmcnish/Documents/imageanalysis/July2016oatCRseverity/14jul2016results_background_subtraction.csv");
+
