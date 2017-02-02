@@ -1,0 +1,313 @@
+//begin read me
+
+//this is an imagej script used to analyze oat seed color and size, please feel free to use this code as an example when writing your own code, i intended this script to be run manually in imagej, i did not intend for this script to be run as a menu macro, this script was developed for mac systems
+
+//the components of this script are:
+//1. loop used to batch analyze many photos (sometimes called jobs)
+//2. variables are defined
+//3. photo channels are separated and each channel is saved a separate .tif file
+//4. each channel is calibrated from digital number to reflectance using control patches and the the photo is saved
+//5. the section of the photo containing the seed are cropped from the photo and saved
+//6. a background mask is created for the seed photo and saved
+//7. the mask file is analyzed for size and the results are saved
+//8. the seed file is analyzed for color and the results are saved
+
+//author: ian mcnish, mcnis003@umn.edu
+
+//last update: 31-jan-2017
+
+//end read me
+
+
+
+
+//begin section 1: list photos to analyze here
+
+var job_list = newArray(2021,2029,2062,2074,2078,2114,2115,2172,2185,2211,2227,2284,2292,2337,2343,2358,2359,2370,3009,3018,3021,3029,3030,3031,3045,3048,3081,3156,3157,3210,3235,3302,3333,3353,3358,3363,3379,7033,7035,7051,7057,7070,7071,7080,7082,7084,7086,7102,7103,7118,7119,7122,7140,7166,7183,7201,7218,7220,7223,7226,7246,7260,7262,7263,7276,7278,7283,7286);
+
+//count the number of photos to be analyzed, this is required for the loop
+
+var array_length=job_list.length;
+
+//start photo loop
+
+for (i=0; i<array_length; i++) {
+
+var current_job=job_list[i];
+
+
+
+//begin section 2: declare variables
+
+// file pathway to working directory:
+var file_directory="/Users/ianmcnish/Documents/imageanalysis/Jan2017oatseedpics/";
+
+
+//file types:
+var type_jpeg=".jpg";
+var type_tiff=".tif";
+var type_csv=".csv";
+var type_zip=".zip";
+
+// original scan file:
+var input_file=file_directory+current_job+type_jpeg;
+
+//single color photos:
+var red_file=file_directory+current_job+"red"+type_tiff;
+var green_file=file_directory+current_job+"green"+type_tiff;
+var blue_file=file_directory+current_job+"blue"+type_tiff;
+
+//calibrated single color photos:
+var red_file_calibrated=file_directory+current_job+"red_calibrated"+type_tiff;
+var green_file_calibrated=file_directory+current_job+"green_calibrated"+type_tiff;
+var blue_file_calibrated=file_directory+current_job+"blue_calibrated"+type_tiff;
+
+//calibrated and cropped single color photos:
+var red_file_calibrated_cropped=file_directory+current_job+"red_calibrated_cropped"+type_tiff;
+var green_file_calibrated_cropped=file_directory+current_job+"green_calibrated_cropped"+type_tiff;
+var blue_file_calibrated_cropped=file_directory+current_job+"blue_calibrated_cropped"+type_tiff;
+
+//color results for calibrated and cropped single color photos:
+var red_results=file_directory+current_job+"red_results"+type_csv;
+var green_results=file_directory+current_job+"green_results"+type_csv;
+var blue_results=file_directory+current_job+"blue_results"+type_csv;
+
+//calibration patch coordinates:
+var white_patch=newArray(50,72,52,94);
+var ltgrey_patch=newArray(154,78,52,94);
+var grey_patch=newArray(268,76,52,94);
+var drkgrey_patch=newArray(376,74,52,94);
+var charcoal_patch=newArray(484,72,52,94);
+var black_patch=newArray(596,74,52,94);
+
+//seed coordinates
+var seed_coordinates=newArray(52,556,592,310);
+
+// length and width calculations based on mask file:
+var size_results=file_directory+current_job+"size_results"+type_csv;
+
+// mask file:
+var mask_file=file_directory+current_job+"_cropped_mask"+type_tiff;
+
+// file that contains dimensions of all seed ROIs:
+var roi_file=file_directory+current_job+"roi_set"+type_zip;
+
+
+
+
+//begin section 3: this function opens the .jpeg file, separates RBG channels into separate photos and saves each channel as a separate .tif file
+
+//open the .jpeg file, separate the photo into R, G, and B channels, separate stack into files
+
+open(input_file);
+run("RGB Stack");
+run("Stack to Images");
+
+//save red channel to .tif file
+
+selectWindow("Red");
+saveAs("Tiff", red_file);
+close();
+
+//save green channel to .tif file
+
+selectWindow("Green");
+saveAs("Tiff", green_file);
+close();
+
+//save blue channel to .tif file
+
+selectWindow("Blue");
+saveAs("Tiff", blue_file);
+close();
+
+
+
+//begin section 4: this function draws regions of interest around each control patch, measures the average Dn, and uses that information to calibrate the image to reflectance values and saves the calibrated photo
+
+open(red_file);
+
+//extract average Dn values for each control patch
+
+setTool("rectangle");
+
+makeRectangle(white_patch[0],white_patch[1],white_patch[2],white_patch[3]);
+run("Measure");
+
+makeRectangle(ltgrey_patch[0],ltgrey_patch[1],ltgrey_patch[2],ltgrey_patch[3]);
+run("Measure");
+
+makeRectangle(grey_patch[0],grey_patch[1],grey_patch[2],grey_patch[3]);
+run("Measure");
+
+makeRectangle(drkgrey_patch[0],drkgrey_patch[1],drkgrey_patch[2],drkgrey_patch[3]);
+run("Measure");
+
+makeRectangle(charcoal_patch[0],charcoal_patch[1],charcoal_patch[2],charcoal_patch[3]);
+run("Measure");
+
+makeRectangle(black_patch[0],black_patch[1],black_patch[2],black_patch[3]);
+run("Measure");
+
+//calibrate and save the calibrated red image
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text2=[.95 .78 .63 .47 .32 .19] show");
+close();
+
+saveAs("Tiff",red_file_calibrated);
+close();
+
+run("Clear Results");
+
+open(green_file);
+
+//extract average Dn values for each control patch
+
+setTool("rectangle");
+
+makeRectangle(white_patch[0],white_patch[1],white_patch[2],white_patch[3]);
+run("Measure");
+
+makeRectangle(ltgrey_patch[0],ltgrey_patch[1],ltgrey_patch[2],ltgrey_patch[3]);
+run("Measure");
+
+makeRectangle(grey_patch[0],grey_patch[1],grey_patch[2],grey_patch[3]);
+run("Measure");
+
+makeRectangle(drkgrey_patch[0],drkgrey_patch[1],drkgrey_patch[2],drkgrey_patch[3]);
+run("Measure");
+
+makeRectangle(charcoal_patch[0],charcoal_patch[1],charcoal_patch[2],charcoal_patch[3]);
+run("Measure");
+
+makeRectangle(black_patch[0],black_patch[1],black_patch[2],black_patch[3]);
+run("Measure");
+
+//calibrate and save the calibrated green image
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text2=[.95 .78 .63 .47 .32 .19] show");
+close();
+
+saveAs("Tiff",green_file_calibrated);
+close();
+
+run("Clear Results");
+
+open(blue_file);
+
+//extract average Dn values for each control patch
+
+setTool("rectangle");
+
+makeRectangle(white_patch[0],white_patch[1],white_patch[2],white_patch[3]);
+run("Measure");
+
+makeRectangle(ltgrey_patch[0],ltgrey_patch[1],ltgrey_patch[2],ltgrey_patch[3]);
+run("Measure");
+
+makeRectangle(grey_patch[0],grey_patch[1],grey_patch[2],grey_patch[3]);
+run("Measure");
+
+makeRectangle(drkgrey_patch[0],drkgrey_patch[1],drkgrey_patch[2],drkgrey_patch[3]);
+run("Measure");
+
+makeRectangle(charcoal_patch[0],charcoal_patch[1],charcoal_patch[2],charcoal_patch[3]);
+run("Measure");
+
+makeRectangle(black_patch[0],black_patch[1],black_patch[2],black_patch[3]);
+run("Measure");
+
+//calibrate and save the calibrated blue image
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text2=[.95 .78 .63 .47 .32 .19] show");
+close();
+
+saveAs("Tiff",blue_file_calibrated);
+close();
+
+run("Clear Results");
+
+
+
+//begin section 5: this function crops the seeds from the photo for each channel
+
+open(red_file_calibrated);
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+saveAs("Tiff",red_file_calibrated_cropped);
+close();
+
+open(green_file_calibrated);
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+saveAs("Tiff",green_file_calibrated_cropped);
+close();
+
+open(blue_file_calibrated);
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+saveAs("Tiff",blue_file_calibrated_cropped);
+close();
+
+
+
+//begin section 6: this function creates a background mask from the original file, this is used later to mask the photo before extracting color information and later used directly to analyze size data
+
+open(input_file);
+
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+
+setThreshold(0, 105, "raw");
+run("Make Binary", "thresholded remaining black");
+
+saveAs("Tiff", mask_file);
+
+close();
+
+
+
+//begin section 7: this function uses the mask file produced in section 7 to measure the length and width of each seed and saves the overlay
+
+open(mask_file);
+
+setThreshold(0, 105, "raw");
+
+run("Make Binary", "thresholded remaining black");
+
+run("Ellipse Split", "binary=[Use standard watershed] add_to_manager add_to_results_table merge_when_relativ_overlap_larger_than_threshold overlap=95 major=30-60 minor=5-50 aspect=2.3-5.7");
+saveAs("Results",size_results);
+close();
+run("Clear Results");
+roiManager("Save", roi_file);
+roiManager("reset")
+
+
+
+//begin section 8: this function opens the seed image for each channel, imports the regions of interest produced in section 8, measures the average reflectance value for each seed, and saves the results
+
+open(red_file_calibrated_cropped);
+roiManager("open", roi_file);
+roiManager("measure")
+saveAs("Results",red_results);
+roiManager("reset")
+close();
+run("Clear Results");
+
+open(green_file_calibrated_cropped);
+roiManager("open", roi_file);
+roiManager("measure")
+saveAs("Results",green_results);
+roiManager("reset")
+close();
+run("Clear Results");
+
+open(blue_file_calibrated_cropped);
+roiManager("open", roi_file);
+roiManager("measure")
+saveAs("Results",blue_results);
+roiManager("reset")
+close();
+run("Clear Results");
+
+} //end photo loop
