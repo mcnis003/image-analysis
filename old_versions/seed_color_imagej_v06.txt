@@ -40,7 +40,7 @@ var current_job=job_list[i];
 //begin section 2: declare variables
 
 // file pathway to working directory:
-var file_directory="/Users/ianmcnish/Documents/imageanalysis/Jan2017oatseedpics/";
+var file_directory=“";
 
 
 //file types:

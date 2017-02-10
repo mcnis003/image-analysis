@@ -1,0 +1,232 @@
+
+var job_list;
+job_list = newArray(2021,2029,"2050a","2050b",2062,2074,2078,"2094a","2094b",2114,2115,2172,2185,2211,2227,2284,2292,2337,2343,2358,2359,2370,3009,3018,3021,3029,3030,3031,3045,3048,3081,3156,3157,3210,3235,3302,3333,3353,3358,3363,3379,7033,7035,7051,7057,7070,7071,7080,7082,7084,7086,7102,7103,7118,7119,7122,7140,7166,7183,7201,7218,7220,7223,7226,7246,7260,7262,7263,7276,7278,7283,7286);
+
+array_length=job_list.length;
+
+for (i=0; i<array_length; i++) {
+     current_job=job_list[i];
+
+var type_jpeg;
+type_jpeg=".jpg";
+
+var type_tiff;
+type_tiff=".tif";
+
+var type_csv;
+type_csv=".csv";
+
+var file_directory;
+file_directory="";
+
+function seperate_channels(file_name){
+
+input_file=file_directory+file_name+type_jpeg;
+
+open(input_file);
+run("RGB Stack");
+run("Stack to Images");
+
+red_file=file_directory+file_name+"red"+type_tiff;
+green_file=file_directory+file_name+"green"+type_tiff;
+blue_file=file_directory+file_name+"blue"+type_tiff;
+
+selectWindow("Red");
+saveAs("Tiff", red_file);
+close();
+
+selectWindow("Green");
+saveAs("Tiff", green_file);
+close();
+
+selectWindow("Blue");
+saveAs("Tiff", blue_file);
+close();
+
+}
+
+seperate_channels(current_job);
+
+function calibrate_by_channel(file_name){
+
+red_file=file_directory+file_name+"red"+type_tiff;
+green_file=file_directory+file_name+"green"+type_tiff;
+blue_file=file_directory+file_name+"blue"+type_tiff;
+
+red_file_calibrated=file_directory+file_name+"red_calibrated"+type_tiff;
+green_file_calibrated=file_directory+file_name+"green_calibrated"+type_tiff;
+blue_file_calibrated=file_directory+file_name+"blue_calibrated"+type_tiff;
+
+open(red_file);
+
+setTool("rectangle");
+
+makeRectangle(50, 72, 52, 94);	//White patch
+run("Add Selection...");
+
+makeRectangle(154, 78, 52, 94);	//LtGrey patch
+run("Add Selection...");
+
+makeRectangle(268, 76, 52, 94);	//Grey patch
+run("Add Selection...");
+
+makeRectangle(376, 74, 52, 94);	//DrkGrey patch
+run("Add Selection...");
+
+makeRectangle(484, 72, 52, 94);	//Charcoal patch
+run("Add Selection...");
+
+makeRectangle(596, 74, 52, 94);	//Black patch
+run("Add Selection...");
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text1=[253.98 166.49 135.77 95.69 66.21 14.27 ] text2=[.95 .78 .63 .47 .32 .19] show");
+close();
+
+saveAs("Tiff",red_file_calibrated);
+close();
+
+open(green_file);
+
+setTool("rectangle");
+
+makeRectangle(50, 72, 52, 94);	//White patch
+run("Add Selection...");
+
+makeRectangle(154, 78, 52, 94);	//LtGrey patch
+run("Add Selection...");
+
+makeRectangle(268, 76, 52, 94);	//Grey patch
+run("Add Selection...");
+
+makeRectangle(376, 74, 52, 94);	//DrkGrey patch
+run("Add Selection...");
+
+makeRectangle(484, 72, 52, 94);	//Charcoal patch
+run("Add Selection...");
+
+makeRectangle(596, 74, 52, 94);	//Black patch
+run("Add Selection...");
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text1=[253.98 166.49 135.77 95.69 66.21 14.27 ] text2=[.93 .79 .64 .47 .33 .19] show");
+close();
+
+saveAs("Tiff",green_file_calibrated);
+close();
+
+open(blue_file);
+
+setTool("rectangle");
+
+makeRectangle(50, 72, 52, 94);	//White patch
+run("Add Selection...");
+
+makeRectangle(154, 78, 52, 94);	//LtGrey patch
+run("Add Selection...");
+
+makeRectangle(268, 76, 52, 94);	//Grey patch
+run("Add Selection...");
+
+makeRectangle(376, 74, 52, 94);	//DrkGrey patch
+run("Add Selection...");
+
+makeRectangle(484, 72, 52, 94);	//Charcoal patch
+run("Add Selection...");
+
+makeRectangle(596, 74, 52, 94);	//Black patch
+run("Add Selection...");
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text1=[253.98 166.49 135.77 95.69 66.21 14.27 ] text2=[.95 .79 .63 .47 .33 .20] show");
+close();
+
+saveAs("Tiff",blue_file_calibrated);
+close();
+
+}
+
+calibrate_by_channel(current_job);
+
+function crop_by_channel(file_name){
+
+red_file=file_directory+file_name+"red"+type_tiff;
+green_file=file_directory+file_name+"green"+type_tiff;
+blue_file=file_directory+file_name+"blue"+type_tiff;
+
+red_file_calibrated=file_directory+file_name+"red_calibrated"+type_tiff;
+green_file_calibrated=file_directory+file_name+"green_calibrated"+type_tiff;
+blue_file_calibrated=file_directory+file_name+"blue_calibrated"+type_tiff;
+
+red_file_calibrated_cropped=file_directory+file_name+"red_calibrated_cropped"+type_tiff;
+green_file_calibrated_cropped=file_directory+file_name+"green_calibrated_cropped"+type_tiff;
+blue_file_calibrated_cropped=file_directory+file_name+"blue_calibrated_cropped"+type_tiff;
+
+open(red_file_calibrated);
+makeRectangle(52, 556, 592, 310);
+run("Crop");
+saveAs("Tiff",red_file_calibrated_cropped);
+close();
+
+open(green_file_calibrated);
+makeRectangle(52, 556, 592, 310);
+run("Crop");
+saveAs("Tiff",green_file_calibrated_cropped);
+close();
+
+open(blue_file_calibrated);
+makeRectangle(52, 556, 592, 310);
+run("Crop");
+saveAs("Tiff",blue_file_calibrated_cropped);
+close();
+
+}
+
+crop_by_channel(current_job);
+
+
+
+
+
+function measure_by_channel(file_name){
+
+red_file=file_directory+file_name+"red"+type_tiff;
+green_file=file_directory+file_name+"green"+type_tiff;
+blue_file=file_directory+file_name+"blue"+type_tiff;
+
+red_file_calibrated=file_directory+file_name+"red_calibrated"+type_tiff;
+green_file_calibrated=file_directory+file_name+"green_calibrated"+type_tiff;
+blue_file_calibrated=file_directory+file_name+"blue_calibrated"+type_tiff;
+
+red_file_calibrated_cropped=file_directory+file_name+"red_calibrated_cropped"+type_tiff;
+green_file_calibrated_cropped=file_directory+file_name+"green_calibrated_cropped"+type_tiff;
+blue_file_calibrated_cropped=file_directory+file_name+"blue_calibrated_cropped"+type_tiff;
+
+red_results=file_directory+file_name+"red_results"+type_csv;
+green_results=file_directory+file_name+"green_results"+type_csv;
+blue_results=file_directory+file_name+"blue_results"+type_csv;
+
+open(red_file_calibrated_cropped);
+setAutoThreshold("Default dark");
+run("Measure");
+saveAs("Results",red_results);
+close();
+run("Clear Results");
+
+open(green_file_calibrated_cropped);
+setAutoThreshold("Default dark");
+run("Measure");
+saveAs("Results",green_results);
+close();
+run("Clear Results");
+
+open(blue_file_calibrated_cropped);
+setAutoThreshold("Default dark");
+run("Measure");
+saveAs("Results",blue_results);
+close();
+run("Clear Results");
+
+
+}
+
+measure_by_channel(current_job);
+
+}
