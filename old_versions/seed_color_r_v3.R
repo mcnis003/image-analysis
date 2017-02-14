@@ -5,7 +5,7 @@
 #institution: University of Minnesota
 #last modified: 7-feb-2017
 
-
+#set working directory, load libraries, import data files ----
 setwd("/Users/ianmcnish/Documents/imageanalysis/feb2017_founder_seeds")
 library(sqldf)
 red_result_files = list.files(pattern="*red_results.csv")
@@ -13,6 +13,7 @@ green_result_files = list.files(pattern="*green_results.csv")
 blue_result_files = list.files(pattern="*blue_results.csv")
 size_result_files = list.files(pattern="*size_results.csv")
 
+#import data files created by seed_color_imagej_vn.txt ----  
 red_data=NULL
 green_data=NULL
 blue_data=NULL
