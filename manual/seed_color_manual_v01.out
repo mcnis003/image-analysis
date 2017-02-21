@@ -1,0 +1,23 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Using ImageJ}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Downloading Fiji}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Downloading tutorial materials from GitHub}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Downloading Ellipse Split}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Open the script}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.5}{Setting parameters in ImageJ}{section.2}% 7
+\BOOKMARK [3][-]{subsubsection.2.5.1}{Choosing the file pathway}{subsection.2.5}% 8
+\BOOKMARK [3][-]{subsubsection.2.5.2}{Enter control patch coordinates}{subsection.2.5}% 9
+\BOOKMARK [3][-]{subsubsection.2.5.3}{Enter seed coordinates}{subsection.2.5}% 10
+\BOOKMARK [3][-]{subsubsection.2.5.4}{Enter control patch reflectance data}{subsection.2.5}% 11
+\BOOKMARK [3][-]{subsubsection.2.5.5}{Changing initial photo file type}{subsection.2.5}% 12
+\BOOKMARK [1][-]{section.3}{Running the script in Fiji}{}% 13
+\BOOKMARK [1][-]{section.4}{Using R}{}% 14
+\BOOKMARK [1][-]{section.5}{Tips for taking photos}{}% 15
+\BOOKMARK [1][-]{section.6}{ImageJ process walkthrough}{}% 16
+\BOOKMARK [2][-]{subsection.6.1}{Section 3: importing the photo and splitting channels}{section.6}% 17
+\BOOKMARK [2][-]{subsection.6.2}{Section 4: radiometric calibration}{section.6}% 18
+\BOOKMARK [2][-]{subsection.6.3}{Section 6: background masking}{section.6}% 19
+\BOOKMARK [2][-]{subsection.6.4}{Section 7: using Ellipse Split to create seed ROIs}{section.6}% 20
+\BOOKMARK [1][-]{section.7}{FAQ}{}% 21
+\BOOKMARK [1][-]{section.8}{Bibliography}{}% 22
+\BOOKMARK [1][-]{section*.24}{Index}{}% 23
