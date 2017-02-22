@@ -1,0 +1,434 @@
+// begin read me
+
+// this is an imagej script used to analyze oat seed color and size, please feel free to use this code as an example when writing your own code, i intended this script to be run manually in imagej, i did not intend for this script to be run as a menu macro, this script was developed for mac systems
+
+//the components of this script are:
+// 1. loop used to batch analyze many photos (sometimes called jobs)
+// 2. variables are defined
+// 3. photo channels are separated and each channel is saved a separate .tif file
+// 4. each channel is calibrated from digital number to reflectance using control patches and the the photo is saved
+// 5. the section of the photo containing the seed are cropped from the photo and saved
+// 6. a background mask is created for the seed photo and saved
+// 7. the mask file is analyzed for size and and color and the results are saved
+// 8. the seed file is analyzed for color and the results are saved
+// 9. transient photo files are deleted if cleanup_mode = true, original photo and result files are saved
+
+// author1: ian mcnish, mcnis003@umn.edu
+// author2: joan barreto otiz, jbarreto@umn.edu
+
+// last update: 20-feb-2017
+
+// end read me
+
+//start developer mode
+
+//setBatchMode(false);
+
+// begin section 1: list photos to analyze here
+
+var job_list = newArray(2021,7286);
+
+// count the number of photos to be analyzed, this is required for the loop
+
+var array_length=job_list.length;
+
+// start photo loop
+
+for (i=0; i<array_length; i++) {
+
+var current_job=job_list[i];
+
+// begin section 2: declare variables
+
+//set cleanup mode, if = TRUE then the script will delete several of the intermediate files at the end of the process
+
+var cleanup_mode = true;
+
+// file pathway to working directory:
+var file_directory="/Users/ianmcnish/Documents/imageanalysis/Jan2017oatseedpics/ImageJ/";
+
+// file types:
+var type_jpg=".jpg";
+var type_tif=".tif";
+var type_csv=".csv";
+var type_zip=".zip";
+
+// original scan file:
+var input_file=file_directory+current_job+type_jpg;
+
+// single color photos:
+var red_file=file_directory+current_job+"red"+type_tif;
+var green_file=file_directory+current_job+"green"+type_tif;
+var blue_file=file_directory+current_job+"blue"+type_tif;
+
+// single color photo window names:
+var red_file_window=""+current_job+"red"+type_tif;
+var green_file_window=""+current_job+"green"+type_tif;
+var blue_file_window=""+current_job+"blue"+type_tif;
+
+// calibrated single color photos:
+var red_file_calibrated=file_directory+current_job+"red_calibrated"+type_tif;
+var green_file_calibrated=file_directory+current_job+"green_calibrated"+type_tif;
+var blue_file_calibrated=file_directory+current_job+"blue_calibrated"+type_tif;
+
+// calibrated single color photo window names:
+var red_file_calibrated_window=""+current_job+"red_calibrated"+type_tif;
+var green_file_calibrated_window=""+current_job+"green_calibrated"+type_tif;
+var blue_file_calibrated_window=""+current_job+"blue_calibrated"+type_tif;
+
+// calibrated and cropped single color photos:
+var red_file_calibrated_cropped=file_directory+current_job+"red_calibrated_cropped"+type_tif;
+var green_file_calibrated_cropped=file_directory+current_job+"green_calibrated_cropped"+type_tif;
+var blue_file_calibrated_cropped=file_directory+current_job+"blue_calibrated_cropped"+type_tif;
+
+// calibrated and cropped single color photo window names:
+var red_file_calibrated_cropped=""+current_job+"red_calibrated_cropped"+type_tif;
+var green_file_calibrated_cropped=""+current_job+"green_calibrated_cropped"+type_tif;
+var blue_file_calibrated_cropped=""+current_job+"blue_calibrated_cropped"+type_tif;
+
+// color results for calibrated and cropped single color photos:
+var red_results=file_directory+current_job+"red_results"+type_csv;
+var green_results=file_directory+current_job+"green_results"+type_csv;
+var blue_results=file_directory+current_job+"blue_results"+type_csv;
+
+// calibration patch coordinates:
+var white_patch=newArray(50,72,52,94);
+var ltgrey_patch=newArray(154,78,52,94);
+var grey_patch=newArray(268,76,52,94);
+var drkgrey_patch=newArray(376,74,52,94);
+var charcoal_patch=newArray(484,72,52,94);
+var black_patch=newArray(596,74,52,94);
+
+// seed coordinates
+var seed_coordinates=newArray(52,556,592,310);
+
+// length and width calculations based on mask file:
+var size_results=file_directory+current_job+"size_results"+type_csv;
+
+// color values for mask file, used in filtering poorly recognized seeds
+var mask_color_results=file_directory+current_job+"_mask_color_results"+type_csv;
+
+// mask image file:
+var mask_file=file_directory+current_job+"_cropped_mask"+type_tif;
+
+// file that contains dimensions of all seed ROIs:
+var roi_file=file_directory+current_job+"roi_set"+type_zip;
+
+
+
+// begin section 3: this function opens the .tiff file, separates RBG channels into separate photos and saves each channel as a separate .tif file
+
+// open the .tiff file, separate the photo into R, G, and B channels, separate stack into files
+
+open(input_file);
+run("Set Scale...", "distance=120 known=1 unit=cm");
+run("RGB Stack");
+run("Stack to Images");
+
+// save red channel to .tif file
+
+selectWindow("Red");
+saveAs("Tiff", red_file);
+
+if (isOpen(red_file_window)) { 
+selectWindow(red_file_window); 
+run("Close"); 
+} // end close
+
+// save green channel to .tif file
+
+selectWindow("Green");
+saveAs("Tiff", green_file);
+
+if (isOpen(green_file_window)) { 
+selectWindow(green_file_window); 
+run("Close"); 
+} // end close
+
+// save blue channel to .tif file
+
+selectWindow("Blue");
+saveAs("Tiff", blue_file);
+
+if (isOpen(blue_file_window)) { 
+selectWindow(blue_file_window); 
+run("Close"); 
+} // end close
+
+
+
+// begin section 4: this function draws regions of interest around each control patch, measures the average Dn, and uses that information to calibrate the image to reflectance values and saves the calibrated photo
+
+open(red_file);
+
+// extract average Dn values for each control patch
+
+setTool("rectangle");
+
+makeRectangle(white_patch[0],white_patch[1],white_patch[2],white_patch[3]);
+run("Measure");
+
+makeRectangle(ltgrey_patch[0],ltgrey_patch[1],ltgrey_patch[2],ltgrey_patch[3]);
+run("Measure");
+
+makeRectangle(grey_patch[0],grey_patch[1],grey_patch[2],grey_patch[3]);
+run("Measure");
+
+makeRectangle(drkgrey_patch[0],drkgrey_patch[1],drkgrey_patch[2],drkgrey_patch[3]);
+run("Measure");
+
+makeRectangle(charcoal_patch[0],charcoal_patch[1],charcoal_patch[2],charcoal_patch[3]);
+run("Measure");
+
+makeRectangle(black_patch[0],black_patch[1],black_patch[2],black_patch[3]);
+run("Measure");
+
+// calibrate and save the calibrated red image
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text2=[.95 .78 .63 .47 .32 .12] show");
+
+if (isOpen("y = a+bx")) { 
+selectWindow("y = a+bx"); 
+run("Close"); 
+} // end close
+
+selectWindow(red_file_window);
+saveAs("Tiff",red_file_calibrated);
+
+if (isOpen(red_file_calibrated_window)) { 
+selectWindow(red_file_calibrated_window); 
+run("Close"); 
+} // end close
+
+run("Clear Results");
+
+if (isOpen("Results")) { 
+selectWindow("Results"); 
+run("Close"); 
+} // end close
+
+open(green_file);
+
+// extract average Dn values for each control patch
+
+setTool("rectangle");
+
+makeRectangle(white_patch[0],white_patch[1],white_patch[2],white_patch[3]);
+run("Measure");
+
+makeRectangle(ltgrey_patch[0],ltgrey_patch[1],ltgrey_patch[2],ltgrey_patch[3]);
+run("Measure");
+
+makeRectangle(grey_patch[0],grey_patch[1],grey_patch[2],grey_patch[3]);
+run("Measure");
+
+makeRectangle(drkgrey_patch[0],drkgrey_patch[1],drkgrey_patch[2],drkgrey_patch[3]);
+run("Measure");
+
+makeRectangle(charcoal_patch[0],charcoal_patch[1],charcoal_patch[2],charcoal_patch[3]);
+run("Measure");
+
+makeRectangle(black_patch[0],black_patch[1],black_patch[2],black_patch[3]);
+run("Measure");
+
+// calibrate and save the calibrated green image
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text2=[.93 .79 .64 .47 .33 .19] show");
+
+if (isOpen("y = a+bx")) { 
+selectWindow("y = a+bx"); 
+run("Close"); 
+} // end close
+
+selectWindow(green_file_window);
+saveAs("Tiff",green_file_calibrated);
+
+if (isOpen(green_file_calibrated_window)) { 
+selectWindow(green_file_calibrated_window); 
+run("Close"); 
+} // end close
+
+run("Clear Results");
+
+if (isOpen("Results")) { 
+selectWindow("Results"); 
+run("Close"); 
+} // end close
+
+open(blue_file);
+
+// extract average Dn values for each control patch
+
+setTool("rectangle");
+
+makeRectangle(white_patch[0],white_patch[1],white_patch[2],white_patch[3]);
+run("Measure");
+
+makeRectangle(ltgrey_patch[0],ltgrey_patch[1],ltgrey_patch[2],ltgrey_patch[3]);
+run("Measure");
+
+makeRectangle(grey_patch[0],grey_patch[1],grey_patch[2],grey_patch[3]);
+run("Measure");
+
+makeRectangle(drkgrey_patch[0],drkgrey_patch[1],drkgrey_patch[2],drkgrey_patch[3]);
+run("Measure");
+
+makeRectangle(charcoal_patch[0],charcoal_patch[1],charcoal_patch[2],charcoal_patch[3]);
+run("Measure");
+
+makeRectangle(black_patch[0],black_patch[1],black_patch[2],black_patch[3]);
+run("Measure");
+
+// calibrate and save the calibrated blue image
+
+run("Calibrate...", "function=[Straight Line] unit=[Optical Density] text2=[.95 .79 .63 .47 .33 .20] show");
+
+if (isOpen("y = a+bx")) { 
+selectWindow("y = a+bx"); 
+run("Close"); 
+} // end close
+
+selectWindow(blue_file_window);
+saveAs("Tiff",blue_file_calibrated);
+
+if (isOpen(blue_file_calibrated_window)) { 
+selectWindow(blue_file_calibrated_window); 
+run("Close"); 
+} // end close
+
+run("Clear Results");
+
+if (isOpen("Results")) { 
+selectWindow("Results"); 
+run("Close"); 
+} // end close
+
+// begin section 5: this function crops the seeds from the photo for each channel
+
+open(red_file_calibrated);
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+saveAs("Tiff",red_file_calibrated_cropped);
+close();
+
+open(green_file_calibrated);
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+saveAs("Tiff",green_file_calibrated_cropped);
+close();
+
+open(blue_file_calibrated);
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+saveAs("Tiff",blue_file_calibrated_cropped);
+close();
+
+
+
+// begin section 6: this function creates a background mask from the original file, this is used later to mask the photo before extracting color information and later used directly to analyze size data
+
+open(input_file);
+
+makeRectangle(seed_coordinates[0],seed_coordinates[1],seed_coordinates[2],seed_coordinates[3]);
+run("Crop");
+
+setThreshold(0, 105, "raw");
+run("Make Binary", "thresholded remaining black");
+
+saveAs("Tiff", mask_file);
+
+close();
+
+
+
+// begin section 7: this function uses the mask file produced in section 7 to measure the length and width of each seed and saves the overlay
+
+open(mask_file);
+
+setThreshold(0, 105, "raw");
+
+run("Make Binary", "thresholded remaining black");
+
+run("Ellipse Split", "binary=[Use standard watershed] add_to_manager add_to_results_table merge_when_relativ_overlap_larger_than_threshold overlap=95 major=30-60 minor=5-50 aspect=2.3-5.7");
+
+saveAs("Results",size_results);
+
+run("Clear Results");
+
+roiManager("Save", roi_file);
+
+roiManager("measure")
+
+saveAs("Results",mask_color_results);
+
+run("Clear Results");
+
+if (isOpen("Results")) { 
+selectWindow("Results"); 
+run("Close"); 
+} // end close
+
+roiManager("reset");
+
+if (isOpen("ROI Manager")) { 
+selectWindow("ROI Manager"); 
+run("Close"); 
+} // end close
+
+
+
+
+// begin section 8: this function opens the seed image for each channel, imports the regions of interest produced in section 8, measures the average reflectance value for each seed, and saves the results
+
+open(red_file_calibrated_cropped);
+roiManager("open", roi_file);
+roiManager("measure")
+saveAs("Results",red_results);
+roiManager("reset")
+close();
+run("Clear Results");
+
+open(green_file_calibrated_cropped);
+roiManager("open", roi_file);
+roiManager("measure")
+saveAs("Results",green_results);
+roiManager("reset")
+close();
+run("Clear Results");
+
+open(blue_file_calibrated_cropped);
+roiManager("open", roi_file);
+roiManager("measure")
+saveAs("Results",blue_results);
+roiManager("reset")
+close();
+run("Clear Results");
+
+// section 9: if cleanup mode = true then code in section 9 will delete several of the transient photos
+
+if (cleanup_mode==true){
+File.delete(red_file);
+File.delete(green_file);
+File.delete(blue_file);
+File.delete(red_file_calibrated);
+File.delete(green_file_calibrated);
+File.delete(blue_file_calibrated);
+File.delete(red_file_calibrated_cropped);
+File.delete(green_file_calibrated_cropped);
+File.delete(blue_file_calibrated_cropped);
+File.delete(mask_file);
+File.delete(roi_file);
+
+     if (isOpen("Log")) { 
+         selectWindow("Log"); 
+         run("Close"); 
+     } // end close log
+     
+} // end cleanup if statement
+
+} // end photo loop
+
+// end developer mode
+
+//setBatchMode(false);
+
