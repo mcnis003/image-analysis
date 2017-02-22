@@ -278,6 +278,7 @@ setThreshold(0, 105, "raw");
 run("Make Binary", "thresholded remaining black");
 
 run("Ellipse Split", "binary=[Use standard watershed] add_to_manager add_to_results_table merge_when_relativ_overlap_larger_than_threshold overlap=95 major=30-60 minor=5-50 aspect=2.3-5.7");
+
 saveAs("Results",size_results);
 close();
 run("Clear Results");

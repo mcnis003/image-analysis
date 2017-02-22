@@ -1,0 +1,135 @@
+#this r script is intended to collect, manage,and analyze the data produced by the imagej script
+#seed_color_imagej_v9, it produces as output file that provides a description of each seed analyzed
+
+#author: Ian McNish, mcnis003@umn.edu
+#institution: University of Minnesota
+#last modified: 13-feb-2017
+
+#set working directory, load libraries, import data files ----
+setwd("/Users/ianmcnish/Documents/imageanalysis/Jan2017oatseedpics")
+library(sqldf)
+red_result_files = list.files(pattern="*red_results.csv")
+green_result_files = list.files(pattern="*green_results.csv")
+blue_result_files = list.files(pattern="*blue_results.csv")
+size_result_files = list.files(pattern="*size_results.csv")
+mask_color_result_files = list.files(pattern="*mask_color_results.csv")
+
+#import data files created by seed_color_imagej_vn.txt ----  
+red_data=NULL
+green_data=NULL
+blue_data=NULL
+size_data=NULL
+mask_color_data=NULL
+
+#red data import----
+
+red_data=read.csv(red_result_files[1])
+red_data$file=red_result_files[1]
+
+for (i in 2:length(red_result_files)) {
+  
+  temp_data=read.csv(red_result_files[i])
+  temp_data$file=red_result_files[i]
+  red_data=rbind(red_data,temp_data)
+  
+}
+
+red_data$file2=sub("*.csv","",red_data$file)
+red_data$job=sub("[a-z]*_[a-z]*","",red_data$file2)
+red_data$red_mean=red_data$Mean
+red_data$seed=red_data$X
+keeps <- c("job","seed","red_mean")
+red_data=red_data[ , (names(red_data) %in% keeps)]
+
+#green data import----
+
+green_data=read.csv(green_result_files[1])
+green_data$file=green_result_files[1]
+
+for (i in 2:length(green_result_files)) {
+  
+  temp_data=read.csv(green_result_files[i])
+  temp_data$file=green_result_files[i]
+  green_data=rbind(green_data,temp_data)
+  
+}
+
+green_data$file2=sub("*.csv","",green_data$file)
+green_data$job=sub("[a-z]*_[a-z]*","",green_data$file2)
+green_data$green_mean=green_data$Mean
+green_data$seed=green_data$X
+keeps <- c("job","seed","green_mean")
+green_data=green_data[ , (names(green_data) %in% keeps)]
+
+#blue data import----
+
+blue_data=read.csv(blue_result_files[1])
+blue_data$file=blue_result_files[1]
+
+for (i in 2:length(blue_result_files)) {
+  
+  temp_data=read.csv(blue_result_files[i])
+  temp_data$file=blue_result_files[i]
+  blue_data=rbind(blue_data,temp_data)
+  
+}
+
+blue_data$file2=sub("*.csv","",blue_data$file)
+blue_data$job=sub("[a-z]*_[a-z]*","",blue_data$file2)
+blue_data$blue_mean=blue_data$Mean
+blue_data$seed=blue_data$X
+keeps <- c("job","seed","blue_mean")
+blue_data=blue_data[ , (names(blue_data) %in% keeps)]
+
+#size_data import----
+
+
+size_data=read.csv(size_result_files[1])
+size_data$file=size_result_files[1]
+
+for (i in 2:length(size_result_files)) {
+  
+  temp_data=read.csv(size_result_files[i])
+  temp_data$file=size_result_files[i]
+  size_data=rbind(size_data,temp_data)
+  
+}
+
+size_data$file2=sub("*.csv","",size_data$file)
+size_data$job=sub("[a-z]*_[a-z]*","",size_data$file2)
+size_data$seed=size_data$X.1
+keeps <- c("job","seed","Length.long.axis","Length.short.axis")
+size_data=size_data[ , (names(size_data) %in% keeps)]
+colnames(size_data)=c("seed_length","seed_width","job","seed")
+
+##mask_color_data import----
+
+mask_color_data=read.csv(mask_color_result_files[1])
+mask_color_data$file=mask_color_result_files[1]
+
+for (i in 2:length(mask_color_result_files)) {
+  
+  temp_data=read.csv(mask_color_result_files[i])
+  temp_data$file=mask_color_result_files[i]
+  mask_color_data=rbind(mask_color_data,temp_data)
+  
+}
+
+mask_color_data$file2=sub("*.csv","",mask_color_data$file)
+mask_color_data$job=sub("_[a-z]*_[a-z]*_[a-z]*","",mask_color_data$file2)
+mask_color_data$seed=mask_color_data$X
+keeps <- c("job","seed","Mean")
+mask_color_data=mask_color_data[ , (names(mask_color_data) %in% keeps)]
+colnames(mask_color_data)=c("mask_mean_color","job","seed")
+
+#join results----
+join1=merge(red_data,green_data)
+join2=merge(join1,blue_data)
+join3=merge(join2,size_data)
+seed_data=merge(join3,mask_color_data)
+
+#write results----
+write.csv(seed_data,file = "seed_phenotypes.csv")
+
+
+

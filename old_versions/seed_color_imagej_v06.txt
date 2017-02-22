@@ -23,7 +23,7 @@
 
 //begin section 1: list photos to analyze here
 
-var job_list = newArray(2021,2029,2062,2074,2078,2114,2115,2172,2185,2211,2227,2284,2292,2337,2343,2358,2359,2370,3009,3018,3021,3029,3030,3031,3045,3048,3081,3156,3157,3210,3235,3302,3333,3353,3358,3363,3379,7033,7035,7051,7057,7070,7071,7080,7082,7084,7086,7102,7103,7118,7119,7122,7140,7166,7183,7201,7218,7220,7223,7226,7246,7260,7262,7263,7276,7278,7283,7286);
+var job_list = newArray(2021,2029);
 
 //count the number of photos to be analyzed, this is required for the loop
 
@@ -40,7 +40,7 @@ var current_job=job_list[i];
 //begin section 2: declare variables
 
 // file pathway to working directory:
-var file_directory=“";
+var file_directory="/Users/ianmcnish/Documents/imageanalysis/Jan2017oatseedpics/";
 
 
 //file types:
