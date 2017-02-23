@@ -117,7 +117,7 @@ var roi_file=file_directory+current_job+"roi_set"+type_zip;
 
 //calibration texts for radiometric calibration and object finding
 var calibrate_text="function=[Straight Line] unit=[Optical Density] text2=[.95 .78 .63 .47 .32 .12] show";
-var ellipse_split_text="binary=[Use standard watershed] add_to_manager add_to_results_table merge_when_relativ_overlap_larger_than_threshold overlap=95 major=30-60 minor=5-50 aspect=2.3-5.7"
+var ellipse_split_text="binary=[Use standard watershed] add_to_manager add_to_results_table merge_when_relativ_overlap_larger_than_threshold overlap=95 major=30-60 minor=5-50 aspect=2.3-5.7";
 
 
 
@@ -371,6 +371,10 @@ setThreshold(0, 105, "raw");
 
 run("Make Binary", "thresholded remaining black");
 
+roiManager("reset");
+
+selectWindow(mask_file_window);
+
 run("Ellipse Split",ellipse_split_text);
 
 saveAs("Results",size_results);
@@ -406,6 +410,7 @@ run("Close");
 // begin section 8: this function opens the seed image for each channel, imports the regions of interest produced in section 8, measures the average reflectance value for each seed, and saves the results
 
 open(red_file_calibrated_cropped);
+roiManager("reset")
 roiManager("open", roi_file);
 roiManager("measure")
 saveAs("Results",red_results);
@@ -428,6 +433,7 @@ run("Close");
 } // end close
 
 open(green_file_calibrated_cropped);
+roiManager("reset")
 roiManager("open", roi_file);
 roiManager("measure")
 saveAs("Results",green_results);
@@ -450,6 +456,7 @@ run("Close");
 } // end close
 
 open(blue_file_calibrated_cropped);
+roiManager("reset")
 roiManager("open", roi_file);
 roiManager("measure")
 saveAs("Results",blue_results);
