@@ -22,11 +22,7 @@
 
 //start developer mode
 
-batch_mode=true
-
-// file pathway to working directory:
-var input_file_directory="/Users/ianmcnish/Documents/imageanalysis/feb2017_founder_seeds/ImageJ/input_files/";
-var output_file_directory="/Users/ianmcnish/Documents/imageanalysis/feb2017_founder_seeds/ImageJ/results/";
+batch_mode=false
 
 // the roi manager must be open before batch mode is enabled
 if(batch_mode==true){
@@ -37,25 +33,26 @@ setBatchMode(batch_mode);
 
 // begin section 1: list photos to analyze here
 
-var job_list = getFileList(input_file_directory);
+var job_list = newArray();
 
 // count the number of photos to be analyzed, this is required for the loop
 
-var array_length=job_list.length;
+//var array_length=job_list.length;
 
 // start photo loop
 
 for (i=0; i<array_length; i++) {
 
-var current_job=job_list[i];
-
-current_job_name=replace(current_job,".tif","");
+var current_job=job_list[1];
 
 // begin section 2: declare variables
 
 //set cleanup mode, if = TRUE then the script will delete several of the intermediate files at the end of the process
 
 var cleanup_mode = true;
+
+// file pathway to working directory:
+var file_directory="/Users/ianmcnish/Documents/imageanalysis/feb2017_deon_size/ImageJ/";
 
 // file types:
 var type_jpg=".jpg";
@@ -64,75 +61,75 @@ var type_csv=".csv";
 var type_zip=".zip";
 
 // original scan file:
-var input_file=input_file_directory+current_job;
+var input_file=file_directory+current_job+type_tif;
 
 // single color photos:
-var red_file=output_file_directory+current_job_name+"red"+type_tif;
-var green_file=output_file_directory+current_job_name+"green"+type_tif;
-var blue_file=output_file_directory+current_job_name+"blue"+type_tif;
+var red_file=file_directory+current_job+"red"+type_tif;
+var green_file=file_directory+current_job+"green"+type_tif;
+var blue_file=file_directory+current_job+"blue"+type_tif;
 
 // single color photo window names:
-var red_file_window=""+current_job_name+"red"+type_tif;
-var green_file_window=""+current_job_name+"green"+type_tif;
-var blue_file_window=""+current_job_name+"blue"+type_tif;
+var red_file_window=""+current_job+"red"+type_tif;
+var green_file_window=""+current_job+"green"+type_tif;
+var blue_file_window=""+current_job+"blue"+type_tif;
 
 // calibrated single color photos:
-var red_file_calibrated=output_file_directory+current_job_name+"red_calibrated"+type_tif;
-var green_file_calibrated=output_file_directory+current_job_name+"green_calibrated"+type_tif;
-var blue_file_calibrated=output_file_directory+current_job_name+"blue_calibrated"+type_tif;
+var red_file_calibrated=file_directory+current_job+"red_calibrated"+type_tif;
+var green_file_calibrated=file_directory+current_job+"green_calibrated"+type_tif;
+var blue_file_calibrated=file_directory+current_job+"blue_calibrated"+type_tif;
 
 // calibrated single color photo window names:
-var red_file_calibrated_window=""+current_job_name+"red_calibrated"+type_tif;
-var green_file_calibrated_window=""+current_job_name+"green_calibrated"+type_tif;
-var blue_file_calibrated_window=""+current_job_name+"blue_calibrated"+type_tif;
+var red_file_calibrated_window=""+current_job+"red_calibrated"+type_tif;
+var green_file_calibrated_window=""+current_job+"green_calibrated"+type_tif;
+var blue_file_calibrated_window=""+current_job+"blue_calibrated"+type_tif;
 
 // calibrated and cropped single color photos:
-var red_file_calibrated_cropped=output_file_directory+current_job_name+"red_calibrated_cropped"+type_tif;
-var green_file_calibrated_cropped=output_file_directory+current_job_name+"green_calibrated_cropped"+type_tif;
-var blue_file_calibrated_cropped=output_file_directory+current_job_name+"blue_calibrated_cropped"+type_tif;
+var red_file_calibrated_cropped=file_directory+current_job+"red_calibrated_cropped"+type_tif;
+var green_file_calibrated_cropped=file_directory+current_job+"green_calibrated_cropped"+type_tif;
+var blue_file_calibrated_cropped=file_directory+current_job+"blue_calibrated_cropped"+type_tif;
 
 // calibrated and cropped single color photo window names:
-var red_file_calibrated_cropped_window=""+current_job_name+"red_calibrated_cropped"+type_tif;
-var green_file_calibrated_cropped_window=""+current_job_name+"green_calibrated_cropped"+type_tif;
-var blue_file_calibrated_cropped_window=""+current_job_name+"blue_calibrated_cropped"+type_tif;
+var red_file_calibrated_cropped_window=""+current_job+"red_calibrated_cropped"+type_tif;
+var green_file_calibrated_cropped_window=""+current_job+"green_calibrated_cropped"+type_tif;
+var blue_file_calibrated_cropped_window=""+current_job+"blue_calibrated_cropped"+type_tif;
 
 // color results for calibrated and cropped single color photos:
-var red_results=output_file_directory+current_job_name+"red_results"+type_csv;
-var green_results=output_file_directory+current_job_name+"green_results"+type_csv;
-var blue_results=output_file_directory+current_job_name+"blue_results"+type_csv;
+var red_results=file_directory+current_job+"red_results"+type_csv;
+var green_results=file_directory+current_job+"green_results"+type_csv;
+var blue_results=file_directory+current_job+"blue_results"+type_csv;
 
 // calibration patch coordinates:
-var white_patch=newArray(1766, 2971, 145, 388);
-var ltgrey_patch=newArray(1431, 2987, 145, 388);
-var grey_patch=newArray(1114, 2991, 145, 388);
-var drkgrey_patch=newArray(783, 2993, 145, 388);
-var charcoal_patch=newArray(456, 2971, 145, 388);
-var black_patch=newArray(132, 2972, 145, 388);
+var white_patch=newArray(240, 4332, 504, 1104);
+var ltgrey_patch=newArray(887, 4336, 528, 1200);
+var grey_patch=newArray(1547, 4324, 516, 1206);
+var drkgrey_patch=newArray(2201, 4324, 510, 1194);
+var charcoal_patch=newArray(2841, 4327, 516, 1224);
+var black_patch=newArray(3501, 4335, 508, 1192);
 
 // seed coordinates
-var seed_coordinates=newArray(0, 0, 1860, 1836);
+var seed_coordinates=newArray(264, 564, 4512, 3420);
 
 // length and width calculations based on mask file:
-var size_results=output_file_directory+current_job_name+"size_results"+type_csv;
+var size_results=file_directory+current_job+"size_results"+type_csv;
 
 // color values for mask file, used in filtering poorly recognized seeds
-var mask_color_results=output_file_directory+current_job_name+"mask_color_results"+type_csv;
+var mask_color_results=file_directory+current_job+"_mask_color_results"+type_csv;
 
 // mask image file and window:
-var mask_file=output_file_directory+current_job_name+"_cropped_mask"+type_tif;
-var mask_file_window=""+current_job_name+"_cropped_mask"+type_tif;
+var mask_file=file_directory+current_job+"_cropped_mask"+type_tif;
+var mask_file_window=""+current_job+"_cropped_mask"+type_tif;
 
 // file that contains dimensions of all seed ROIs:
-var roi_file=output_file_directory+current_job_name+"roi_set"+type_zip;
+var roi_file=file_directory+current_job+"roi_set"+type_zip;
 
 // choose object detection method: if equal to ‘ellipse_split’ then ellipse split method is used (less accurate, but better if seeds are touching), if equal to ‘analyze_particles’ then analyze particles method is used (most accurate, but only if seeds are not touching)
-var object_detection_method="ellipse_split";
+
+var object_detection_method=“analyze_particles”;
 
 //calibration texts for radiometric calibration and object finding
 var calibrate_text="function=[Straight Line] unit=[Optical Density] text2=[.95 .78 .63 .47 .32 .12] show";
-var ellipse_split_text="binary=[Use standard watershed] add_to_manager add_to_results_table merge_when_relativ_overlap_larger_than_threshold overlap=0 major=70-200 minor=20-80 aspect=2-10";
+var ellipse_split_text="binary=[Use standard watershed] add_to_manager add_to_results_table merge_when_relativ_overlap_larger_than_threshold overlap=95 major=150-470 minor=35-200 aspect=2-10";
 var analyze_particles_text="size=1000-Infinity show=Nothing display clear include summarize add";
-
 
 
 // begin section 3: this function opens the .tiff file, separates RBG channels into separate photos and saves each channel as a separate .tif file
@@ -362,7 +359,7 @@ run("Close");
 
 open(red_file_calibrated_cropped);
 
-setThreshold(0, 125, "raw");
+setThreshold(0, 105, "raw");
 run("Make Binary", "thresholded remaining black");
 
 saveAs("Tiff", mask_file);
@@ -385,13 +382,13 @@ roiManager("reset");
 
 selectWindow(mask_file_window);
 
-if (object_detection_method=="ellipse_split"){
+if (object_detection_method==“ellipse_split”{
 
 run("Ellipse Split",ellipse_split_text);
 
 } // end ellipse split if statement
 
-if (object_detection_method=="analyze_particles"){
+if (object_detection_method==“analyze_particles){
 
 setThreshold(105, 255, "raw");
 run("Analyze Particles...", analyze_particles_text);
